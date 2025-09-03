@@ -1,13 +1,13 @@
-package com.leandronazareth.kafka;
+package com.leandronazareth.kafka_api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class KafkaApplication {
+public class KafkaApiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(KafkaApplication.class, args);
+		SpringApplication.run(KafkaApiApplication.class, args);
 	}
 
 }

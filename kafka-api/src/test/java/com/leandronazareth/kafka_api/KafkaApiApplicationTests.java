@@ -1,10 +1,10 @@
-package com.leandronazareth.kafka;
+package com.leandronazareth.kafka_api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class KafkaApplicationTests {
+class KafkaApiApplicationTests {
 
 	@Test
 	void contextLoads() {
