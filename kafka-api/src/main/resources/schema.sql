@@ -1,14 +1,15 @@
 create table shop (
-    id bigserial primary key auto_increment,
-    identifier varchar not null,
-    status varchar not null,
-    date_shop date
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    identifier VARCHAR NOT NULL,
+    status VARCHAR NOT NULL,
+    date_shop DATE
 );
 
 create table shop_item (
-    id bigserial primary key auto_increment,
-    product_identifier varchar(100) not null,
-    amount int not null,
-    price float not null,
-    shop_id bigint REFERENCES shop(id)
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_identifier VARCHAR(100) NOT NULL,
+    amount INT NOT NULL,
+    price FLOAT NOT NULL,
+    shop_id BIGINT,
+    FOREIGN KEY (shop_id) REFERENCES shop(id)
 );
