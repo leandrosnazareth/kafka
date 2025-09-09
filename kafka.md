@@ -20,6 +20,9 @@ kafka-console-consumer --topic pedidos --from-beginning --bootstrap-server local
 definir grupo de consumidores
 kafka-console-consumer --topic pedidos --bootstrap-server localhost:9092 --group grupo1
 
+verificar que a mensagem já está no Kafka
+kafka-console-consumer --topic SHOP_TOPIC --bootstrap-server localhost:9092 --from-beginning 
+
 listar os grupos de consumidores
 kafka-consumer-groups --bootstrap-server localhost:9092 --list
 
