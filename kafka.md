@@ -1,33 +1,37 @@
 Comandos Kafka denntro do container
-criar topicos
+# CRIAR TÓPICOS
 kafka-topics --create   --topic "nome_topic"   --bootstrap-server localhost:9092   --partitions 1   --replication-factor 1
 
-listar topicos
+# LISTAR TÓPICOS
+listar todos os topicos criados e internos
 kafka-topics --list --bootstrap-server localhost:9092
+listar somente topicos criados
+kafka-topics --bootstrap-server localhost:9092 --list | grep -v '^_'
 
-apagar topicos
+
+# APAGAR TÓPICOS
 kafka-topics --delete --topic "nome_topic" --bootstrap-server localhost:9092
 
-retornar detalhes de um tópico especifico
+# RETONAR DETALHES DO TÓPICO
 kafka-topics --describe --topic "nome_topic" --bootstrap-server localhost:9092
 
-enviar mensagem
+# ENVIAR MENSAGEM PARA O TÓPICO
 kafka-console-producer --topic "nome_topic" --bootstrap-server localhost:9092
 
-receber consumir mensagem
+# RECEBER CONSUMIR MENSAGEM DO TÓPICO
 kafka-console-consumer --topic "nome_topic" --from-beginning --bootstrap-server localhost:9092
 
-definir grupo de consumidores
+# CRIAR GRUPO DE CONSUMIDORES
 kafka-console-consumer --topic "nome_topic" --bootstrap-server localhost:9092 --group grupo1
 
-verificar que a mensagem já está no Kafka
+# VERIFICAR SE A MENSAGEM FOI ENVIADA E ESTÁ NO TÓPICO
 kafka-console-consumer --topic SHOP_TOPIC --bootstrap-server localhost:9092 --from-beginning 
 
-listar os grupos de consumidores
+# LISTAR OS GRUPOS DE CONSUMIDORES
 kafka-consumer-groups --bootstrap-server localhost:9092 --list
 
-apagar grupo 
+# APAGAR GRUPO DE CONSUMIDORES
 kafka-consumer-groups --bootstrap-server localhost:9092 --group grupo1 --delete
 
-reinicializar totalmente o kafka
+# REINICIALIZAR E REDEFINIR KAFKA
 rm -rf /tmp/kafka-logs /tmp/zookeeper
