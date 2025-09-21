@@ -1,0 +1,76 @@
+# Define a versão do Docker Compose que estamos usando. A versão 3.7 é moderna e estável.
+version: '3.7'
+
+services:
+
+  # --- Serviço 1: Zookeeper ---
+  # O Zookeeper é um "gerente" para o Kafka. Ele guarda metadados importantes,
+  # como quais brokers (servidores Kafka) estão online e quem é o líder de cada partição.
+  # É uma dependência crucial para o funcionamento do cluster Kafka.
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    # Define um nome de rede fixo para este contêiner.
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    # 'environment' define as variáveis de ambiente (configurações) para o software dentro do contêiner.
+    environment:
+      # Configura a porta que o Zookeeper usará para aceitar conexões de clientes.
+      ZOOKEEPER_CLIENT_PORT: 2181
+      # Define o intervalo de tempo básico usado pelo Zookeeper para sincronização.
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # --- Serviço 2: Kafka Broker ---
+  # Este é o servidor Kafka principal, também chamado de "Broker".
+  # É ele quem recebe, armazena e envia os fluxos de dados (mensagens).
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    hostname: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      # Expõe a porta principal do Kafka (9092) para que aplicações fora do Docker possam se conectar.
+      - "9092:9092"
+    environment:
+      # ID único para este broker Kafka. Se tivéssemos mais brokers, cada um teria um ID diferente (2, 3, etc.).
+      KAFKA_BROKER_ID: 1
+      # Informa ao Kafka onde encontrar o Zookeeper. Usamos o hostname que definimos antes.
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      # Mapeia os protocolos de segurança para os "listeners" (portas de escuta) do Kafka.
+      # Usamos PLAINTEXT (sem criptografia) para simplificar o ambiente de desenvolvimento.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      # Este é um dos pontos mais importantes! Define como outros sistemas devem se conectar ao Kafka.
+      # - 'PLAINTEXT://kafka:29092' é para comunicação INTERNA entre os contêineres.
+      # - 'PLAINTEXT_HOST://localhost:9092' é para comunicação EXTERNA (da sua máquina para o contêiner).
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      # Fator de replicação para tópicos internos do Kafka. '1' significa que não haverá cópias dos dados.
+      # Ideal para desenvolvimento, mas em produção o valor seria 3 ou mais para segurança.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # Zera o atraso inicial no balanceamento de consumidores. Útil para acelerar testes.
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  # --- Serviço 3: Control Center (Interface Gráfica) 📊 ---
+  # Esta é a aplicação web que nos dá uma interface visual para gerenciar e monitorar o Kafka.
+  control-center:
+    #image: confluentinc/cp-control-center:3.0.1
+    image: confluentinc/cp-enterprise-control-center:7.4.10
+    hostname: control-center
+    # Garante que o Control Center só inicie DEPOIS que o Kafka estiver pronto.
+    depends_on:
+      - kafka
+    ports:
+      # Expõe a porta 9021. É aqui que você acessará a interface no seu navegador (http://localhost:9021).
+      - "9021:9021"
+    environment:
+      # Informa ao Control Center como se conectar ao Kafka para gerenciá-lo.
+      # Note que ele usa o listener interno ('kafka:29092').
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'kafka:29092'
+      # Fator de replicação para os tópicos que o próprio Control Center cria para funcionar.
+      # '1' é suficiente para desenvolvimento.
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      # Configurações de partitions para tópicos internos do Control Center.
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      # Define a porta que o serviço web do Control Center usará dentro do contêiner.
+      PORT: 9021
