@@ -1,16 +1,20 @@
 Comandos Kafka denntro do container
 # CRIAR TÓPICOS
-kafka-topics --create   --topic "nome_topic"   --bootstrap-server localhost:9092   --partitions 1   --replication-factor 1
+kafka-topics --create --topic nome_topic --bootstrap-server localhost:9092 --partitions 1  --replication-factor 1
+### CRIAR TÓPICOS COM MAIS DE UMA PARTIÇÃO
+kafka-topics --create --topic nome_topic --bootstrap-server localhost:9092 --partitions 6
 
 # LISTAR TÓPICOS
-listar todos os topicos criados e internos
+### listar todos os topicos criados e internos
 kafka-topics --list --bootstrap-server localhost:9092
-listar somente topicos criados
+### listar somente topicos criados
 kafka-topics --bootstrap-server localhost:9092 --list | grep -v '^_'
 
+# DESCREVER TÓPICOS (RETORNAR INFORMAÇÕES DO TÓPICO)
+kafka-topics --describe --topic SHOP_TOPIC --bootstrap-server localhost:9092
 
 # APAGAR TÓPICOS
-kafka-topics --delete --topic "nome_topic" --bootstrap-server localhost:9092
+kafka-topics --delete --topic nome_topic --bootstrap-server localhost:9092
 
 # RETONAR DETALHES DO TÓPICO
 kafka-topics --describe --topic "nome_topic" --bootstrap-server localhost:9092
