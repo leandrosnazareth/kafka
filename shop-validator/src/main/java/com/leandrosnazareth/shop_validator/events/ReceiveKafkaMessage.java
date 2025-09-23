@@ -3,6 +3,7 @@ package com.leandrosnazareth.shop_validator.events;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataAccessException;
 
 import com.leandrosnazareth.shop_validator.dto.ShopDTO;
 import com.leandrosnazareth.shop_validator.dto.ShopItemDTO;
@@ -28,9 +29,19 @@ public class ReceiveKafkaMessage {
                     shopDTO.getIdentifier());
             boolean success = true;
             for (ShopItemDTO item : shopDTO.getItems()) {
-                Product product = productRepository
-                        .findByIdentifier(
-                                item.getProductIdentifier());
+                Product product = null;
+                try {
+                    product = productRepository.findByIdentifier(item.getProductIdentifier());
+                } catch (DataAccessException dae) {
+                    log.error("Erro ao acessar o banco para produto {}: {}",
+                            item.getProductIdentifier(), dae.getMessage());
+                    log.debug("Stack:", dae);
+                    // marca como erro e interrompe processamento dessa compra
+                    shopError(shopDTO);
+                    success = false;
+                    break;
+                }
+
                 if (!isValidShop(item, product)) {
                     shopError(shopDTO);
                     success = false;
@@ -42,7 +53,13 @@ public class ReceiveKafkaMessage {
             }
         } catch (Exception e) {
             log.error("Erro no processamento da compra {}",
-                    shopDTO.getIdentifier());
+                    shopDTO.getIdentifier(), e);
+            // garante que um evento ERROR seja enviado em caso de exceção não esperada
+            try {
+                shopError(shopDTO);
+            } catch (Exception ex) {
+                log.error("Falha ao enviar evento de erro para a compra {}", shopDTO.getIdentifier(), ex);
+            }
         }
     }
 
@@ -50,8 +67,8 @@ public class ReceiveKafkaMessage {
     private boolean isValidShop(
             ShopItemDTO item,
             Product product) {
-        return product != null ||
-                product.getAmount() >= item.getAmount();
+        // retorna true somente se o produto existe E tiver quantidade suficiente
+        return product != null && product.getAmount() >= item.getAmount();
     }
 
     // Envia uma mensagem para o Kafka indicando erro na compra
