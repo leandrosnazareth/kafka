@@ -7,5 +7,7 @@ import com.leandrosnazareth.shop_api.model.Shop;
 
 @Repository
 public interface ShopRepository extends JpaRepository<Shop, Long> {
-    
+
+    public Shop findByIdentifier(String identifier);
+
 }
